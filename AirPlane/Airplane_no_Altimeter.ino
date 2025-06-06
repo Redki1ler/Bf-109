@@ -348,6 +348,7 @@ void ElevatorDegree() { //I am not commenting this figure it out yourself
   }
   ChangeAltBy = round(ChangeAltBy);
 
+  MaxSpeed = true;
   if(abs(ChangeAltBy) >= 5 && timerStartPitch + 5000 >= millis()){
     ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
   }else if(abs(ChangeAltBy) >= 4 && timerStartPitch + 4000 >= millis()){
@@ -359,6 +360,7 @@ void ElevatorDegree() { //I am not commenting this figure it out yourself
   }else if(abs(ChangeAltBy) >= 1 && timerStartPitch + 2000 >= millis()){
     ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
   }else{
+    !MaxSpeed;
     GotoAlt = false;
     ChangeAltBy = 0;
   }
