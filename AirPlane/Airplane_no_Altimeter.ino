@@ -8,7 +8,7 @@
 const byte MPU_ADDR = 0x68;
 const byte INTERRUPT_PIN = 13;
 const double stallSpeed = 30;
-const double PI_OVER_180 = M_PI / 180.0
+const double PI_OVER_180 = M_PI / 180.0;
 
 // Pin definitions
 const byte ElevatorPin = 2;
