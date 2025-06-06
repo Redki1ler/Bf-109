@@ -78,8 +78,7 @@ volatile bool MPUInterrupt = false;
 
 //Timer variables
 unsigned long timerStartMillis = 0; // Variable to store the start time when the timer is started
-bool timerActive = false; // Flag to indicate if the timer is active
-unsigned int timerDuration = 0; // Duration of the timer in seconds
+unsigned long timerStartPitch = 0; // Start time for Pitch control
 unsigned long ledOnStartMillis = 0;  // Start time for LED ON state
 unsigned long ledOffStartMillis = 0; // Start time for LED OFF state
 bool ledState = false;               // Current state of the LEDs (false = OFF, true = ON)
@@ -171,18 +170,7 @@ void setup() {
 
   timerStartMillis = millis(); // Record the current time
 
-  if(timerStartMillis > 30 000){
-    Land = true;
-  }else if(timerStartMillis > 60 000){
-    ChangeYawBy = 90;
-    GotoYaw = true;
-  }else if(timerStartMillis > 90 000){
-    ChangeYawBy = 90;
-    GotoYaw = true;
-  }else if(timerStartMillis > 120 000){
-    ChangeAltBy = 5;
-    GotoAlt = true;
-  }
+  
 }
 
 void loop() {
@@ -199,20 +187,17 @@ void loop() {
 
 
   //Flight Path
-  
-  if (CheckTimer()) {
-    if (timerDuration == 120) {
-      Land = true;
-    } else if (timerDuration == 90) {
-      ChangeYawBy = 90;
-      GotoYaw = true;
-    } else if (timerDuration == 60) {
-      ChangeYawBy = 90;
-      GotoYaw = true;
-    } else if (timerDuration == 30) {
-      ChangeAltBy = 5;
-      GotoAlt = true;
-    }
+  if(timerStartMillis > 30 000){
+    Land = true;
+  }else if(timerStartMillis > 60 000){
+    ChangeYawBy = 90;
+    GotoYaw = true;
+  }else if(timerStartMillis > 90 000){
+    ChangeYawBy = 90;
+    GotoYaw = true;
+  }else if(timerStartMillis > 120 000){
+    ChangeAltBy = 5;
+    GotoAlt = true;
   }
 
   MotorSpeed();
@@ -357,18 +342,11 @@ void RudderDegree() {
 }
 
 void ElevatorDegree() {
-  if (!DoOncePitch) { //Refresh every 10 seconds
-    // Set the target Altitude only once when starting the turn
-    if(!Land){
-      DesiredAlt = Altitude + ChangeAltBy;  // ChangeAltBy is the desired Altitude change
-    }else{
-      DesiredAlt = 0.4;
-    }
+  if (!DoOncePitch) { 
+    timerStartPitch = millis();
     DoOncePitch = true;                   // Set the flag to true
   }
   ChangeAltBy = round(ChangeAltBy);
-
-  double AltError = DesiredAlt - Altitude;  // Calculate Altitude error
 
   if (abs(AltError) < 0.2) {
     if (pitch > 0 && pitch < 1.5) {
@@ -492,23 +470,5 @@ void ShowData() {
     Serial.print(yrp[1] * 180 / M_PI);
     Serial.print("\t");
     Serial.println(yrp[2] * 180 / M_PI);
-  }
-
-  }
-  if (millis() - timerStartMillis >= timerDuration * 1000UL) {
-    timerActive = false; // Timer finished
-    return true;
-  }
-  return false; // Timer still running
-        ledState = false;
-      }
-    } else {
-      if (millis() - ledOffStartMillis >= 400) {
-        digitalWrite(RightLedPin, HIGH); // Switch to RIGHT LED
-        digitalWrite(LeftLedPin, LOW);
-        ledOnStartMillis = millis();
-        ledState = true;
-      }
-    }
   }
 }
