@@ -289,17 +289,14 @@ void MotorSpeed() {
 }
 
 void Altstabilizer() {
-  if ((pitch < 1.5 && pitch > -1.5)) {
+  if ((pitch < 5 && pitch > 0)) {
     ElevatorAngleStabilizer = 90.0;
-  }
-  if ((pitch < 20.0 || pitch > -20.0) && (pitch > 1.5 || pitch < -1.5)) {
+  }else if ((pitch < 20.0 || pitch > -20.0) && (pitch > 5 || pitch < 0)) {
     ElevatorAngleStabilizer = 90 - pitch;
     ElevatorAngleStabilizer = constrain(ElevatorAngleStabilizer, 45, 135);
-  }
-  if (pitch > 20.0) {
+  }else if (pitch > 20.0) {
     ElevatorAngleStabilizer = 45;
-  }
-  if (pitch < -20.0) {
+  }else if (pitch < -20.0) {
     ElevatorAngleStabilizer = 135;
   }
 }

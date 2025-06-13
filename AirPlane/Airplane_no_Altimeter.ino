@@ -200,6 +200,8 @@ void loop() {
 
   MotorSpeed();
   LEDFlash();
+  Altstabilizer();
+  RollStabilizer();
 
   if (GotoYaw) {
     RollDegree();
@@ -207,7 +209,7 @@ void loop() {
       // GotoYaw and GotoAlt are both true
       ElevatorDegree();
       if (AltError > 0) {
-        Elevator.write(135);  // Climb
+        Elevator.write(135); 
       } else {
         Elevator.write(ElevatorAngleGotoAlt);  // Adjust for altitude change
       }
@@ -225,7 +227,7 @@ void loop() {
 
       // Adjust elevator based on Roll
       if (abs(Roll) > 5 && abs(Roll) <= 80) {
-        Elevator.write(135);  // Roll is moderate, adjust elevator
+        Elevator.write(135);  // Roll is just right, adjust elevator
         RightAileron.write(RightAileronAngle);
         LeftAileron.write(LeftAileronAngle);
       } else if (abs(Roll) > 80 && abs(Roll) < 180) {
@@ -233,7 +235,7 @@ void loop() {
         RightAileron.write(RightAileronStabilizer);
         LeftAileron.write(LeftAileronStabilizer);
       } else {
-        Elevator.write(90);  // Roll is neutral, keep elevator level
+        Elevator.write(90);  // Didn't roll yet, keep elevator level
         RightAileron.write(RightAileronAngle);
         LeftAileron.write(LeftAileronAngle);
       }
@@ -243,18 +245,13 @@ void loop() {
       // GotoYaw is false, but GotoAlt is true
       // Stabilize ailerons and adjust elevator for altitude
       ElevatorDegree();
-      if(ChangeAltby > -4){
-        RightAileron.write(RightAileronStabilizer);
-        LeftAileron.write(LeftAileronStabilizer);
-      }else{
-        RightAileron.write(RightAileronAngle);
-        LeftAileron.write(LeftAileronAngle);
-      }
+      RightAileron.write(RightAileronStabilizer);
+      LeftAileron.write(LeftAileronStabilizer);
 
       Elevator.write(ElevatorAngleGotoAlt);
     } else {
       // Both GotoYaw and GotoAlt are false
-      Elevate = true;  // Enable elevation mode
+      Elevate = true;  // Stabilize
     }
   }
 
@@ -287,17 +284,14 @@ void MotorSpeed() {
 }
 
 void Altstabilizer() {
-  if ((pitch < 1.5 && pitch > -1.5)) {
+  if ((pitch < 5 && pitch > 0)) {
     ElevatorAngleStabilizer = 90.0;
-  }
-  if ((pitch < 20.0 || pitch > -20.0) && (pitch > 1.5 || pitch < -1.5)) {
+  }else if ((pitch < 20.0 || pitch > -20.0) && (pitch > 5 || pitch < 0)) {
     ElevatorAngleStabilizer = 90 - pitch;
     ElevatorAngleStabilizer = constrain(ElevatorAngleStabilizer, 45, 135);
-  }
-  if (pitch > 20.0) {
+  }else if (pitch > 20.0) {
     ElevatorAngleStabilizer = 45;
-  }
-  if (pitch < -20.0) {
+  }else if (pitch < -20.0) {
     ElevatorAngleStabilizer = 135;
   }
 }
@@ -381,7 +375,7 @@ void ElevatorDegree() { //I am not commenting this figure it out yourself
 }
 
 void RollDegree() {
-  if (!DoOnceYaw && Timer(10)) { //Refresh every 10 seconds
+  if (!DoOnceYaw) { 
     // Set the target yaw only once when starting the turn
     DesiredYaw = Yaw + ChangeYawBy;  // ChangeYawBy is the desired yaw change
     DoOnceYaw = true;                // Set the flag to true
@@ -400,22 +394,8 @@ void RollDegree() {
       LeftAileronAngle = LeftAileronStabilizer;
     }
 
-  } else if (ChangeAltBy < -5) {
-    if (Roll > 170 && Roll < -170) {  //keep aircraft flipped For altitude Change
-      RightAileronAngle = 90;
-      LeftAileronAngle = 90;
-    } else {
-      if (Roll > 0) {
-        RightAileronAngle = 45;
-        LeftAileronAngle = 135;
-      } else {
-        RightAileronAngle = 135;
-        LeftAileronAngle = 45;
-      }
-    }
   } else {
     // Use ailerons to roll the aircraft toward the desired yaw
-
     MaxSpeed = true;
 
     if (abs(Roll) > 40 && abs(Roll) < 50) {  //keep aircraft tilted to change Yaw
