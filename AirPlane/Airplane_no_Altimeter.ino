@@ -169,8 +169,6 @@ void setup() {
   }
 
   timerStartMillis = millis(); // Record the current time
-
-  
 }
 
 void loop() {
@@ -279,7 +277,7 @@ void MotorSpeed() {
     Motor.write(180); //100%
   }else{
     if(Land){
-      Motor.write(54); //30%
+      Motor.write(0); //0%
     }else if(Elevate){
       Motor.write(126); //70%
     }else{
@@ -342,27 +340,43 @@ void RudderDegree() {
 }
 
 void ElevatorDegree() { //I am not commenting this figure it out yourself
+  unsigned long TimerGoal;
   if (!DoOncePitch) { 
     timerStartPitch = millis();
-    DoOncePitch = true;                   // Set the flag to true
+    TimerGoal = 0;
+    DoOncePitch = true;                   // Set the flag to maybe
   }
   ChangeAltBy = round(ChangeAltBy);
-
   MaxSpeed = true;
-  if(abs(ChangeAltBy) >= 5 && timerStartPitch + 5000 >= millis()){
-    ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
-  }else if(abs(ChangeAltBy) >= 4 && timerStartPitch + 4000 >= millis()){
-    ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
-  }else if(abs(ChangeAltBy) >= 3 && timerStartPitch + 3000 >= millis()){
-    ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
-  }else if(abs(ChangeAltBy) >= 2 && timerStartPitch + 2000 >= millis()){
-    ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
-  }else if(abs(ChangeAltBy) >= 1 && timerStartPitch + 2000 >= millis()){
-    ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
-  }else{
-    !MaxSpeed;
-    GotoAlt = false;
+  if(TimerGoal != 0 && millis() >= TimerGoal){ //Timer ended checker
     ChangeAltBy = 0;
+    !GotoAlt;
+    !DoOncePitch;
+  }else if(Land){
+    ElevatorAngleGotoAlt = -10;
+    ChangeAltBy = 0;
+    !GotoAlt;
+    !DoOncePitch;
+  }else{
+    if(abs(ChangeAltBy) >= 5 && timerStartPitch + 5000 >= millis()){ //i dont know
+      ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
+      TimerGoal = timerStartPitch + 5000;
+    }else if(abs(ChangeAltBy) >= 4 && timerStartPitch + 4000 >= millis()){
+      ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
+      TimerGoal = timerStartPitch + 4000;
+    }else if(abs(ChangeAltBy) >= 3 && timerStartPitch + 3000 >= millis()){
+      ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
+      TimerGoal = timerStartPitch + 3000;
+    }else if(abs(ChangeAltBy) >= 2 && timerStartPitch + 2000 >= millis()){
+      ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
+      TimerGoal = timerStartPitch + 2000;
+    }else if(abs(ChangeAltBy) >= 1 && timerStartPitch + 1000 >= millis()){
+      ChangeAltBy > 0 ? ElevatorAngleGotoAlt = 25 : ElevatorAngleGotoAlt = -20;
+      TimerGoal = timerStartPitch + 1000;
+    }else{
+      !GotoAlt;
+      !DoOncePitch;
+    }
   }
 }
 
@@ -419,7 +433,6 @@ void RollDegree() {
 void ShowData() {
   // print out data
   if (mpu.dmpGetCurrentFIFOPacket(FIFOBuffer)) {  // Get the Latest packet
-
     /* Display Euler angles in degrees */
     mpu.dmpGetQuaternion(&q, FIFOBuffer);
     mpu.dmpGetGravity(&gravity, &q);
