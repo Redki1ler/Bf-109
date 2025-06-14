@@ -1,6 +1,5 @@
 #include <Servo.h>
 #include <math.h>
-#include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
@@ -187,15 +186,15 @@ void loop() {
 
 
   //Flight Path
-  if(timerStartMillis > 30 000){
+  if(timerStartMillis > 30000){
     Land = true;
-  }else if(timerStartMillis > 60 000){
+  }else if(timerStartMillis > 60000){
     ChangeYawBy = 90;
     GotoYaw = true;
-  }else if(timerStartMillis > 90 000){
+  }else if(timerStartMillis > 90000){
     ChangeYawBy = 90;
     GotoYaw = true;
-  }else if(timerStartMillis > 120 000){
+  }else if(timerStartMillis > 120000){
     ChangeAltBy = 5;
     GotoAlt = true;
   }

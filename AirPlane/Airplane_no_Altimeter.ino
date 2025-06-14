@@ -1,6 +1,5 @@
 #include <Servo.h>
 #include <math.h>
-#include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
@@ -283,7 +282,7 @@ void MotorSpeed() {
   }
 }
 
-void Altstabilizer() {
+void Altstabilizer() { // this is easy I dont want to comment it
   if ((pitch < 5 && pitch > 0)) {
     ElevatorAngleStabilizer = 90.0;
   }else if ((pitch < 20.0 || pitch > -20.0) && (pitch > 5 || pitch < 0)) {
@@ -296,11 +295,11 @@ void Altstabilizer() {
   }
 }
 
-void RollStabilizer() {
+void RollStabilizer() { // this is easy I dont want to comment it
   if (abs(Roll) > 4 && abs(Roll) < 90) {
     RightAileronStabilizer = 90 - (Roll / 2);
     LeftAileronStabilizer = 90 + (Roll / 2);
-  } else if (Roll > 90 && Roll < 180) {
+  } else if (Roll >= 90 && Roll <= 180) {
     RightAileronStabilizer = 45;
     LeftAileronStabilizer = 135;
   } else if (Roll < -90 && Roll > -180) {
@@ -311,7 +310,7 @@ void RollStabilizer() {
   }
 }
 
-void RudderDegree() {
+void RudderDegree() { // this is easy I dont want to comment it
   if (GotoYaw) {
     if (abs(Roll) < 20) {
       YawError < 0 ? RudderAngle = 45 : RudderAngle = 135;
@@ -377,11 +376,11 @@ void ElevatorDegree() { //I am not commenting this figure it out yourself
 void RollDegree() {
   if (!DoOnceYaw) { 
     // Set the target yaw only once when starting the turn
-    DesiredYaw = Yaw + ChangeYawBy;  // ChangeYawBy is the desired yaw change
-    DoOnceYaw = true;                // Set the flag to true
+    DesiredYaw = Yaw + ChangeYawBy;  
+    DoOnceYaw = true;           
   }
 
-  YawError = DesiredYaw - Yaw;  // Calculate yaw error
+  YawError = DesiredYaw - Yaw;  
 
   if (abs(YawError) < 5) {  // Dead zone for small yaw errors
     // Yaw is close to the target, stabilize the ailerons
@@ -396,7 +395,7 @@ void RollDegree() {
 
   } else {
     // Use ailerons to roll the aircraft toward the desired yaw
-    MaxSpeed = true;
+    MaxSpeed = true;      //Go very fast
 
     if (abs(Roll) > 40 && abs(Roll) < 50) {  //keep aircraft tilted to change Yaw
       RightAileronAngle = 90;
