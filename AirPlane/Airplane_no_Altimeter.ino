@@ -78,9 +78,9 @@ volatile bool MPUInterrupt = false;
 //Timer variables
 unsigned long timerStartMillis = 0; // Variable to store the start time when the timer is started
 unsigned long timerStartPitch = 0; // Start time for Pitch control
-unsigned long ledOnStartMillis = 0;  // Start time for LED ON state
-unsigned long ledOffStartMillis = 0; // Start time for LED OFF state
-bool ledState = false;               // Current state of the LEDs (false = OFF, true = ON)
+volatile unsigned long ledOnStartMillis = 0;  // Start time for LED ON state
+volatile unsigned long ledOffStartMillis = 0; // Start time for LED OFF state
+volatile bool ledState = false;               // Current state of the LEDs (false = OFF, true = ON)
 
 // Function declarations
 void MotorSpeed();
@@ -89,11 +89,8 @@ void RollStabilizer();
 void RudderDegree();
 void ElevatorDegree();
 void RollDegree();
-void ShowData();
-void DMPDataReady();
-void StartTimer(unsigned int duration);
-bool CheckTimer();
 void LEDFlash();
+void ShowData();
 
 void setup() {
   Serial.begin(115200);
@@ -406,6 +403,63 @@ void RollDegree() {
       LeftAileronAngle = 90 + (YawError / 2);                     // Adjust left aileron
       RightAileronAngle = constrain(RightAileronAngle, 45, 135);  // Limit angles
       LeftAileronAngle = constrain(LeftAileronAngle, 45, 135);    // Limit angles
+    }
+  }
+}
+
+void LEDFlash() {
+  if (LedFlash[0]) {
+    // Fast flash: 0.4s ON, 0.4s OFF
+    if (ledState) {
+      // LEDs are ON — check if time to turn OFF
+      if (millis() - ledOnStartMillis >= 400) {
+        digitalWrite(RightLedPin, LOW);
+        digitalWrite(LeftLedPin, LOW);
+        ledOffStartMillis = millis(); // Record OFF start time
+        ledState = false;
+      }
+    } else {
+      // LEDs are OFF — check if time to turn ON
+      if (millis() - ledOffStartMillis >= 400) {
+        digitalWrite(RightLedPin, HIGH);
+        digitalWrite(LeftLedPin, HIGH);
+        ledOnStartMillis = millis(); // Record ON start time
+        ledState = true;
+      }
+    }
+  } else if (LedFlash[1]) {
+    // Slow flash: 1s ON, 1s OFF
+    if (ledState) {
+      if (millis() - ledOnStartMillis >= 1000) {
+        digitalWrite(RightLedPin, LOW);
+        digitalWrite(LeftLedPin, LOW);
+        ledOffStartMillis = millis();
+        ledState = false;
+      }
+    } else {
+      if (millis() - ledOffStartMillis >= 1000) {
+        digitalWrite(RightLedPin, HIGH);
+        digitalWrite(LeftLedPin, HIGH);
+        ledOnStartMillis = millis();
+        ledState = true;
+      }
+    }
+  } else if (LedFlash[2]) {
+    // Alternating flash: 0.4s RIGHT ON, 0.4s LEFT ON
+    if (ledState) {
+      if (millis() - ledOnStartMillis >= 400) {
+        digitalWrite(RightLedPin, LOW);
+        digitalWrite(LeftLedPin, HIGH); // Switch to LEFT LED
+        ledOffStartMillis = millis();
+        ledState = false;
+      }
+    } else {
+      if (millis() - ledOffStartMillis >= 400) {
+        digitalWrite(RightLedPin, HIGH); // Switch to RIGHT LED
+        digitalWrite(LeftLedPin, LOW);
+        ledOnStartMillis = millis();
+        ledState = true;
+      }
     }
   }
 }
