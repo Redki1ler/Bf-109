@@ -182,6 +182,7 @@ void loop() {
   Wire.endTransmission(false);              // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
   Wire.requestFrom(MPU_ADDR, 7 * 2, true);  // request a total of 7*2=14 registers
 
+  //wire.update();
 
   //Flight Path
   if(timerStartMillis > 30 000){
