@@ -30,6 +30,7 @@ volatile double Yaw;
 volatile int ChangeYawBy;
 double DesiredYaw;
 double DesiredAlt;
+double AltError;
 double YawError;
 double Speed;
 double pitch;
@@ -241,7 +242,7 @@ void loop() {
       // GotoYaw is false, but GotoAlt is true
       // Stabilize ailerons and adjust elevator for altitude
       ElevatorDegree();
-      if(ChangeAltby > -4){
+      if(ChangeAltBy > -4){
         RightAileron.write(RightAileronStabilizer);
         LeftAileron.write(LeftAileronStabilizer);
       }else{
@@ -336,10 +337,13 @@ void RudderDegree() {
 
 void ElevatorDegree() {
   if (!DoOncePitch) { 
-    timerStartPitch = millis();
+    DesiredAlt = Altitude + ChangeAltBy;
     DoOncePitch = true;                   // Set the flag to true
   }
+
   ChangeAltBy = round(ChangeAltBy);
+
+  AltError = DesiredAlt - Altitude;
 
   if (abs(AltError) < 0.2) {
     if (pitch > 0 && pitch < 1.5) {
@@ -347,7 +351,7 @@ void ElevatorDegree() {
       GotoAlt = false;
       DoOncePitch = false;
     } else {
-      ElevatorAngleGotoAlt = ElevatorAngleStabilizer; //thieft? YOOO
+      ElevatorAngleGotoAlt = ElevatorAngleStabilizer; //thieft
     }
   } else {
     if (abs(pitch) > 40 && abs(pitch) < 50) {
@@ -366,7 +370,7 @@ void ElevatorDegree() {
           ElevatorAngleGotoAlt = 90;
         }
       } else {
-        switch (AltError) {
+        switch (round(AltError)) {
           case 4:
             ElevatorAngleGotoAlt = 120;
             break;
@@ -400,7 +404,7 @@ void ElevatorDegree() {
 }
 
 void RollDegree() {
-  if (!DoOnceYaw && Timer(10)) { //Refresh every 10 seconds
+  if (!DoOnceYaw) { //Refresh every 10 seconds
     // Set the target yaw only once when starting the turn
     DesiredYaw = Yaw + ChangeYawBy;  // ChangeYawBy is the desired yaw change
     DoOnceYaw = true;                // Set the flag to true

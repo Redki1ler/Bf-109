@@ -78,7 +78,7 @@ volatile bool MPUInterrupt = false;
 //Timer variables
 unsigned long timerStartMillis = 0; // Variable to store the start time when the timer is started
 unsigned long timerStartPitch = 0; // Start time for Pitch control
-volatile unsigned long ledOnStartMillis = 0;  // Start time for LED ON state
+volatile unsigned long ledOnStartMillis = 0;  // Start time for LED ON state  
 volatile unsigned long ledOffStartMillis = 0; // Start time for LED OFF state
 volatile bool ledState = false;               // Current state of the LEDs (false = OFF, true = ON)
 
@@ -182,15 +182,15 @@ void loop() {
   //wire.update();
 
   //Flight Path
-  if(timerStartMillis > 30 000){
+  if(timerStartMillis > 30000){
     Land = true;
-  }else if(timerStartMillis > 60 000){
+  }else if(timerStartMillis > 60000){
     ChangeYawBy = 90;
     GotoYaw = true;
-  }else if(timerStartMillis > 90 000){
+  }else if(timerStartMillis > 90000){
     ChangeYawBy = 90;
     GotoYaw = true;
-  }else if(timerStartMillis > 120 000){
+  }else if(timerStartMillis > 120000){
     ChangeAltBy = 5;
     GotoAlt = true;
   }
