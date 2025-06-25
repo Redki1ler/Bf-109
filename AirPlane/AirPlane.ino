@@ -1,4 +1,5 @@
 #include <Servo.h>
+#include <Wire.h>
 #include <math.h>
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
@@ -91,6 +92,7 @@ void RudderDegree();
 void ElevatorDegree();
 void RollDegree();
 void LEDFlash();
+void DMPDataReady();
 void ShowData();
 
 void setup() {
@@ -150,7 +152,6 @@ void setup() {
     Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
     Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
     Serial.println(F(")..."));
-    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), DMPDataReady, RISING);
     MPUIntStatus = mpu.getIntStatus();
 
     /* Set the DMP Ready flag so the main loop() function knows it is okay to use it */
@@ -508,6 +509,10 @@ void LEDFlash() {
       }
     }
   }
+}
+
+void DMPDataReady() {
+  MPUInterrupt = true;
 }
 
 void ShowData() {

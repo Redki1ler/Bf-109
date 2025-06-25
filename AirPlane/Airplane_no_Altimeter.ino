@@ -90,6 +90,7 @@ void RudderDegree();
 void ElevatorDegree();
 void RollDegree();
 void LEDFlash();
+void DMPDataReady();
 void ShowData();
 
 void setup() {
@@ -462,6 +463,10 @@ void LEDFlash() {
       }
     }
   }
+}
+
+void DMPDataReady() {
+    MPUInterrupt = true;
 }
 
 void ShowData() {
