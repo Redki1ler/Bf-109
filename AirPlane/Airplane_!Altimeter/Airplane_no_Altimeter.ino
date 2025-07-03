@@ -101,28 +101,6 @@ void setup() {
   Wire.endTransmission(true);
   mpu.initialize();
 
-  /*Verify connection*/
-  Serial.println(F("Testing MPU6050 connection..."));
-  if (mpu.testConnection() == false) {
-    Serial.println("MPU6050 connection failed");
-  } else {
-    Serial.println("MPU6050 connection successful");
-  }
-
-  delay(5000);
-
-  /* Initializate and configure the DMP*/
-  Serial.println(F("Initializing DMP..."));
-  devStatus = mpu.dmpInitialize();
-
-  /* Supply your gyro offsets here, scaled for min sensitivity */
-  mpu.setXGyroOffset(0);
-  mpu.setYGyroOffset(0);
-  mpu.setZGyroOffset(0);
-  mpu.setXAccelOffset(0);
-  mpu.setYAccelOffset(0);
-  mpu.setZAccelOffset(0);
-
   pinMode(ElevatorPin, OUTPUT);
   pinMode(RudderPin, OUTPUT);
   pinMode(RightAileronPin, OUTPUT);
@@ -137,6 +115,30 @@ void setup() {
   LeftAileron.attach(LeftAileronPin);
   Motor.attach(MotorPin);
 
+  /*Verify connection*/
+  Serial.println(F("Testing MPU6050 connection..."));
+  if (mpu.testConnection() == false) {
+    Serial.println("MPU6050 connection failed");
+    while (1){
+      delay(2500);
+      Serial.println("MPU6050 connection failed!");
+    }
+  } else {
+    Serial.println("MPU6050 connection successful");
+  }
+
+  /* Initializate and configure the DMP*/
+  Serial.println(F("Initializing DMP..."));
+  devStatus = mpu.dmpInitialize();
+
+  /* Supply your gyro offsets here, scaled for min sensitivity */
+  mpu.setXGyroOffset(0);
+  mpu.setYGyroOffset(0);
+  mpu.setZGyroOffset(0);
+  mpu.setXAccelOffset(0);
+  mpu.setYAccelOffset(0);
+  mpu.setZAccelOffset(0);
+
   /* Making sure the mpu6050 worked (returns 0 if so) */
   if (devStatus == 0) {
     mpu.CalibrateAccel(10);  // Calibration Time: generate offsets and calibrate our MPU6050
@@ -150,7 +152,6 @@ void setup() {
     Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
     Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
     Serial.println(F(")..."));
-    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), DMPDataReady, RISING);
     MPUIntStatus = mpu.getIntStatus();
 
     /* Set the DMP Ready flag so the main loop() function knows it is okay to use it */
