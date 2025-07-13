@@ -84,24 +84,8 @@ volatile unsigned long ledOnStartMillis = 0;  // Start time for LED ON state
 volatile unsigned long ledOffStartMillis = 0; // Start time for LED OFF state
 volatile bool ledState = false;               // Current state of the LEDs (false = OFF, true = ON)
 
-// Function declarations
-void MotorSpeed();
-void Altstabilizer();
-void RollStabilizer();
-void RudderDegree();
-void ElevatorDegree();
-void RollDegree();
-void LEDFlash();
-void DMPDataReady();
-void ShowData();
-
 void setup() {
   Serial.begin(115200);
-  Wire.beginTransmission(MPU_ADDR);  // Begins a transmission to the I2C slave (GY-521 board)
-  Wire.write(0x6B);                  // PWR_MGMT_1 register
-  Wire.write(0);                     // set to zero (wakes up the MPU-6050)
-  Wire.endTransmission(true);
-  mpu.initialize();
 
   pinMode(ElevatorPin, OUTPUT);
   pinMode(RudderPin, OUTPUT);
@@ -117,72 +101,22 @@ void setup() {
   LeftAileron.attach(LeftAileronPin);
   Motor.attach(MotorPin);
 
-  /*Verify connection*/
-  Serial.println(F("Testing MPU6050 connection..."));
-  if (mpu.testConnection() == false) {
-    Serial.println("MPU6050 connection failed");
-    while (1){
-      delay(2500);
-      Serial.println("MPU6050 connection failed!");
-    }
-  } else {
-    Serial.println("MPU6050 connection successful");
-  }
+  MPUStartup();
 
-  /* Initializate and configure the DMP*/
-  Serial.println(F("Initializing DMP..."));
-  devStatus = mpu.dmpInitialize();
-
-  /* Supply your gyro offsets here, scaled for min sensitivity */
-  mpu.setXGyroOffset(0);
-  mpu.setYGyroOffset(0);
-  mpu.setZGyroOffset(0);
-  mpu.setXAccelOffset(0);
-  mpu.setYAccelOffset(0);
-  mpu.setZAccelOffset(0);
-
-  /* Making sure the mpu6050 worked (returns 0 if so) */
-  if (devStatus == 0) {
-    mpu.CalibrateAccel(10);  // Calibration Time: generate offsets and calibrate our MPU6050
-    mpu.CalibrateGyro(6);
-    Serial.println("These are the Active offsets: ");
-    mpu.PrintActiveOffsets();
-    Serial.println(F("Enabling DMP..."));  //Turning ON DMP
-    mpu.setDMPEnabled(true);
-
-    /*Enable Arduino interrupt detection*/
-    Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-    Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-    Serial.println(F(")..."));
-    MPUIntStatus = mpu.getIntStatus();
-
-    /* Set the DMP Ready flag so the main loop() function knows it is okay to use it */
-    Serial.println(F("DMP ready! Waiting for first interrupt..."));
-    DMPReady = true;
-    packetSize = mpu.dmpGetFIFOPacketSize();  //Get expected DMP packet size for later comparison
-  } else {
-    Serial.print(F("DMP Initialization failed (code "));  //Print the error code
-    Serial.print(devStatus);
-    Serial.println(F(")"));
-    // 1 = initial memory load failed
-    // 2 = DMP configuration updates failed
-  }
-
-  timerStartMillis = millis(); // Record the current time
+  timerStartMillis = millis(); // Record the Start time to compare later
 }
 
 void loop() {
-  ShowData();
-
-  pitch = yrp[2] * 180 / M_PI;
-  Roll = yrp[1] * 180 / M_PI;
-  Yaw = yrp[0] * 180 / M_PI;
-
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B);                         // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
   Wire.endTransmission(false);              // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
   Wire.requestFrom(MPU_ADDR, 7 * 2, true);  // request a total of 7*2=14 registers
 
+  ShowData();
+
+  pitch = yrp[2] * 180 / M_PI;
+  Roll = yrp[1] * 180 / M_PI;
+  Yaw = yrp[0] * 180 / M_PI;
 
   //Flight Path
   if(timerStartMillis > 30000){
@@ -509,6 +443,64 @@ void LEDFlash() {
       }
     }
   }
+}
+
+void MPUStartup() {
+    Wire.beginTransmission(MPU_ADDR);  // Begins a transmission to the I2C slave (GY-521 board)
+    Wire.write(0x6B);                  // PWR_MGMT_1 register
+    Wire.write(0);                     // set to zero (wakes up the MPU-6050)
+    Wire.endTransmission(true);
+    mpu.initialize();
+
+    /*Verify connection*/
+    Serial.println(F("Testing MPU6050 connection..."));
+    if (mpu.testConnection() == false) {
+      Serial.println("MPU6050 connection failed");
+      while (1){
+        delay(2500);
+        Serial.println("MPU6050 connection failed!");
+      }
+    } else {
+      Serial.println("MPU6050 connection successful");
+    }
+
+    /* Initializate and configure the DMP*/
+    Serial.println(F("Initializing DMP..."));
+    devStatus = mpu.dmpInitialize();
+
+    mpu.setXGyroOffset(0);
+    mpu.setYGyroOffset(0);
+    mpu.setZGyroOffset(0);
+    mpu.setXAccelOffset(0);
+    mpu.setYAccelOffset(0);
+    mpu.setZAccelOffset(0);
+
+    /* Making sure the mpu6050 worked (returns 0 if so) */
+    if (devStatus == 0) {
+      mpu.CalibrateAccel(10);  // Calibration Time: generate offsets and calibrate our MPU6050
+      mpu.CalibrateGyro(6);
+      Serial.println("These are the Active offsets: ");
+      mpu.PrintActiveOffsets();
+      Serial.println(F("Enabling DMP..."));  //Turning ON DMP
+      mpu.setDMPEnabled(true);
+
+      /*Enable Arduino interrupt detection*/
+      Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
+      Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
+      Serial.println(F(")..."));
+      MPUIntStatus = mpu.getIntStatus();
+
+      /* Set the DMP Ready flag so the main loop() function knows it is okay to use it */
+      Serial.println(F("DMP ready! Waiting for first interrupt..."));
+      DMPReady = true;
+      packetSize = mpu.dmpGetFIFOPacketSize();  //Get expected DMP packet size for later comparison
+    } else {
+      Serial.print(F("DMP Initialization failed (code "));  //Print the error code
+      Serial.print(devStatus);
+      Serial.println(F(")"));
+      // 1 = initial memory load failed
+      // 2 = DMP configuration updates failed
+    }
 }
 
 void DMPDataReady() {
