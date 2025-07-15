@@ -388,7 +388,7 @@ void RollDegree() {
   }
 }
 
-void LEDFlash() {
+void LEDFlash() { //right light is green & left light is red
   if (LedFlash[0]) {
     // Fast flash: 0.4s ON, 0.4s OFF
     if (ledState) {
