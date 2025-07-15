@@ -83,6 +83,7 @@ Adafruit_BMP280 bmp; // I2C
 //Adafruit_BMP280 bmp(BMP_CS); // hardware SPI
 //Adafruit_BMP280 bmp(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
 unsigned BMPstatus;
+volatile double SurfaceAltitude;
 
 //temp
 bool DoOnceYaw;
@@ -129,6 +130,7 @@ void loop() {
 
   ShowData();
 
+  Altitude = bmp.readAltitude(1013.25) - SurfaceAltitude; // Calculate altitude based on surface level pressure
   pitch = yrp[2] * 180 / M_PI;
   Roll = yrp[1] * 180 / M_PI;
   //Yaw = yrp[0] * 180 / M_PI;
@@ -471,10 +473,10 @@ void MPUStartup() {
     Serial.println(F("Testing MPU6050 connection..."));
     if (mpu.testConnection() == false) {
       Serial.println("MPU6050 connection failed");
-      while (1){
+      /*while (1){
         delay(2500);
         Serial.println("MPU6050 connection failed!");
-      }
+      }*/
     } else {
       Serial.println("MPU6050 connection successful");
     }
@@ -530,6 +532,10 @@ void BMP280Startup(){
     Serial.print("        ID of 0x60 represents a BME 280.\n");
     Serial.print("        ID of 0x61 represents a BME 680.\n");
     while (1) delay(10);
+  }else{
+    Serial.println(F("BMP280 sensor found!"));
+    Serial.print(F("SensorID was: 0x")); Serial.println(bmp.sensorID(), HEX);
+    Serial.print(F("BMP280 status: ")); Serial.println(BMPstatus, HEX);
   }
 
   /* Default settings from datasheet. */
@@ -538,6 +544,13 @@ void BMP280Startup(){
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+  
+  LedFlash[2]; // Set the LED flash pattern to alternating flash to Notify user to place the aircraft near the surface!
+  delay(5000); // Wait for the sensor to stabilize
+  SurfaceAltitude = bmp.readAltitude(1013.25); // Read the surface altitude based on local forecast pressure
+  Serial.print(F("Surface altitude set to: "));
+  Serial.print(SurfaceAltitude);
+  Serial.println(F(" m"));
 }
 
 void DMPDataReady() {
@@ -570,6 +583,6 @@ void ShowData() {
   Serial.println(" Pa");*/
 
   Serial.print(F("Approx altitude = "));
-  Serial.print(bmp.readAltitude(1013.25)); /* Adjusted to local forecast! */
+  Serial.print(Altitude); //you should know what this is
   Serial.println(" m");
 }
