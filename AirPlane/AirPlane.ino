@@ -129,6 +129,7 @@ void loop() {
 
   ShowData();
 
+  Altitude = bmp.readAltitude(1013.25);
   pitch = yrp[2] * 180 / M_PI;
   Roll = yrp[1] * 180 / M_PI;
   //Yaw = yrp[0] * 180 / M_PI;
