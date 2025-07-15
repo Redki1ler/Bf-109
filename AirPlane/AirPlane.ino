@@ -3,6 +3,9 @@
 #include <math.h>
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_BMP280.h>
 
 /* 
   speed units is always in m/s
@@ -70,6 +73,17 @@ Quaternion q;
 VectorFloat gravity;
 float yrp[3];
 
+//BMP280
+#define BMP_SCK  (13)
+#define BMP_MISO (12)
+#define BMP_MOSI (11)
+#define BMP_CS   (10)
+
+Adafruit_BMP280 bmp; // I2C
+//Adafruit_BMP280 bmp(BMP_CS); // hardware SPI
+//Adafruit_BMP280 bmp(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
+unsigned BMPstatus;
+
 //temp
 bool DoOnceYaw;
 bool DoOncePitch;
@@ -101,6 +115,7 @@ void setup() {
   LeftAileron.attach(LeftAileronPin);
   Motor.attach(MotorPin);
 
+  BMP280Startup();
   MPUStartup();
 
   timerStartMillis = millis(); // Record the Start time to compare later
@@ -116,7 +131,7 @@ void loop() {
 
   pitch = yrp[2] * 180 / M_PI;
   Roll = yrp[1] * 180 / M_PI;
-  Yaw = yrp[0] * 180 / M_PI;
+  //Yaw = yrp[0] * 180 / M_PI;
 
   //Flight Path
   if(timerStartMillis > 30000){
@@ -503,6 +518,28 @@ void MPUStartup() {
     }
 }
 
+void BMP280Startup(){
+  //status = bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);
+  BMPstatus = bmp.begin();
+  if (!BMPstatus) {
+    Serial.println(F("Could not find a valid BMP280 sensor, check wiring or "
+                      "try a different address!"));
+    Serial.print("SensorID was: 0x"); Serial.println(bmp.sensorID(),16);
+    Serial.print("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085\n");
+    Serial.print("   ID of 0x56-0x58 represents a BMP 280,\n");
+    Serial.print("        ID of 0x60 represents a BME 280.\n");
+    Serial.print("        ID of 0x61 represents a BME 680.\n");
+    while (1) delay(10);
+  }
+
+  /* Default settings from datasheet. */
+  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+}
+
 void DMPDataReady() {
   MPUInterrupt = true;
 }
@@ -522,4 +559,17 @@ void ShowData() {
     Serial.print("\t");
     Serial.println(yrp[2] * 180 / M_PI);
   }
+  
+  //BMP280
+  /*Serial.print(F("Temperature = "));
+  Serial.print(bmp.readTemperature());
+  Serial.println(" *C");
+
+  Serial.print(F("Pressure = "));
+  Serial.print(bmp.readPressure());
+  Serial.println(" Pa");*/
+
+  Serial.print(F("Approx altitude = "));
+  Serial.print(bmp.readAltitude(1013.25)); /* Adjusted to local forecast! */
+  Serial.println(" m");
 }
