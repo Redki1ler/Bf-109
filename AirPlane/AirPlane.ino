@@ -574,13 +574,13 @@ void ShowData() {
   }
   
   //BMP280
-  /*Serial.print(F("Temperature = "));
+  Serial.print(F("Temperature = "));
   Serial.print(bmp.readTemperature());
   Serial.println(" *C");
 
   Serial.print(F("Pressure = "));
   Serial.print(bmp.readPressure());
-  Serial.println(" Pa");*/
+  Serial.println(" Pa");
 
   Serial.print(F("Approx altitude = "));
   Serial.print(Altitude); //you should know what this is
