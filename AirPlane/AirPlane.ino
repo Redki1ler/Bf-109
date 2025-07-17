@@ -130,12 +130,12 @@ void loop() {
   ShowData();
 
   Altitude = bmp.readAltitude(1013.25) - SurfaceAltitude; // Calculate altitude based on surface level pressure
-based on surface lev<<<<<<< HEAD
-  Altitude = bmp.readAltitude(1013.25) - SurfaceAltitude; // Calculate altitude based on surface level pressure
-=======
-  Altitude = bmp.readAltitude(1013.25);
->>>>>>> 3bf672b40a4f229c80aabebd8f171e5edf862b48
-0){
+  pitch = yrp[2] * 180 / M_PI;
+  Roll = yrp[1] * 180 / M_PI;
+  //Yaw = yrp[0] * 180 / M_PI;
+
+  //Flight Path
+  if(timerStartMillis > 30000){
     Land = true;
   }else if(timerStartMillis > 60000){
     ChangeYawBy = 90;
